@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Numbers Detector AI</title>
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Ubuntu+Condensed&display=swap" rel="stylesheet"> 
+	<style type="text/css">
+		*{
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			font-family: 'Ubuntu Condensed', sans-serif;
+		}
+		body{
+			height: 100vh;
+			overflow: hidden;
+		}
+		#content{
+			height: 350px;
+			width: 350px;
+			margin: 0 auto;
+			border: 2px solid #333;
+			margin-top: 40px;
+			border-radius: 5px;
+			cursor: crosshair;
+		}
+		#button-section{
+			width: 100vw;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			margin-top: 20px; 
+		}
+		button{
+			border-radius: 0px;
+			border: none;
+			margin: 10px;
+			padding: 15px;
+			color: #ffffff;
+			cursor: pointer;
+			background-color:  #1a5276;
+			transition: 1.5 all ease;
+		}
+		button:hover{
+			background-color:  #2f8dca;
+		}
+		header{
+			width: 100vw;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			margin: 20px; 
+		}
+		h1{
+			margin-top: 5px;
+			font-size: 20px;
+			word-spacing: 2px;
+			color: #333;
+		}
+		@media (max-width: 320px){
+			#content{
+				width: 250px;
+				height: 250px;
+			}
+		}
+		@media (max-width: 280px){
+			#content{
+				width: 200px;
+				height: 200px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<header>
+		<h1>Numbers Detector AI By Muhammad Hanan Asghar
+	</header>
+	<div id="content">
+		<canvas id="myCanvas"></canvas>
+	</div>
+	
+	<section id="button-section">
+		<button id="clearCanvas"> Clear</button>
+		<button id="predict"> Predict</button>
+	</section>
+
+	{% if predict %}
+	<script type="text/javascript">
+		alert('You Have Written'+' '+'{{predict}}')
+	</script>
+	{% endif %}
+
+	<script type="text/javascript">
+		var canvas = document.getElementById("myCanvas");
+		var cntx = canvas.getContext("2d");
+		var painting = document.getElementById("content");
+		var paintStyle = getComputedStyle(painting);
+		canvas.width = parseInt(paintStyle.getPropertyValue("width"));
+		canvas.height = parseInt(paintStyle.getPropertyValue("height"));
+
+
+		var Mouse = { x: 0, y: 0 };
+		var lastMouse = { x: 0, y: 0 };
+		cntx.fillStyle="white";
+		cntx.fillRect(0,0,canvas.width,canvas.height);
+		cntx.color = "black";
+		cntx.lineWidth = 10;
+	    cntx.lineJoin = cntx.lineCap = 'round';
+
+		canvas.addEventListener('mousemove', function(e){
+			mouse.x = e.pageX - this.offsetLeft;
+			mouse.y = e.pageY - this.offsetTop;
+
+		}, false);
+
+
+		canvas.addEventListener('mousedown', function(e){
+			cntx.beginPath();
+			cntx.moveTo(mouse.x, mouse.y);
+			canvas.addEventListener('mousemove', onPaint, false);
+		}, false);
+
+
+		canvas.addEventListener('mouseup', function(){
+			canvas.removeEventListener('mousemove', onPaint, false);
+		}, false);
+
+		var onPaint = function(){
+			cntx.lineTo(mouse.x, mouse.y);
+			cntx.stroke();
+			cntx.strokeStyle = "#333";
+		}
+
+		var clear = document.getElementById("clearCanvas");
+		var pred = document.getElementById("predict");
+
+		clear.addEventListener('click', function(e){
+		    var canvas=document.getElementById("myCanvas");
+		    var context=canvas.getContext("2d");
+		    context.clearRect(0,0,canvas.width,canvas.height);
+		});
+
+		pred.addEventListener('click', function(e){
+			var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+	   			var img = canvas.toDataURL();
+	   			$.ajax({
+	   				type: "POST",
+	   				url: $SCRIPT_ROOT + "/predict/",
+	   				data: img,
+	   				success: function(data){
+	   					console.log(data);
+	   				}
+	   			});
+
+
+			// To Download Canvas Image
+			// if (window.navigator.msSaveBlob){
+			// 	window.navigator.msSaveBlob(canvas.msToBlob(), "image.png");
+			// }else{
+			// 	const a = document.createElement("a");
+			// 	document.body.appendChild(a);
+			// 	a.href = dataURI;
+			// 	a.download = "image.jpg";
+			// 	a.click();
+			// 	document.body.removeChild(a);
+			// }
+		});
+	</script>
+</body>
+</html>
